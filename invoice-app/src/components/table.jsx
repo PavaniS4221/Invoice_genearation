@@ -1,83 +1,132 @@
-import React from 'react';
+import React, { useState } from 'react';
+import './table.css';
 
-const Table = ({ items, updateItem, removeItem, addItem, lineValue }) => {
+function Table() {
+  const [items, setItems] = useState([
+    { id: 1, description: 'Product 1', hsn: '1001', qty: 2, rate: 100 },
+    { id: 2, description: 'Product 2', hsn: '1002', qty: 1, rate: 200 },
+  ]);
+
+  const [editingCell, setEditingCell] = useState({ id: null, field: null });
+
+  // Calculate value per row
+  const getValue = (qty, rate) => {
+    const q = parseFloat(qty) || 0;
+    const r = parseFloat(rate) || 0;
+    return q * r;
+  };
+
+  // Subtotal
+  const subTotal = items.reduce((sum, item) => sum + getValue(item.qty, item.rate), 0);
+
+  // Tax calculations
+  const cgst = subTotal * 0.09;
+  const sgst = subTotal * 0.09;
+  const igst = 0; // 18% if applicable
+  const grandTotal = subTotal + cgst + sgst + igst;
+  const roundOff = Math.round(grandTotal) - grandTotal;
+
+  // Edit handling
+  const handleDoubleClick = (id, field) => {
+    setEditingCell({ id, field });
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') setEditingCell({ id: null, field: null });
+  };
+
+  const handleChange = (id, field, value) => {
+    const updated = items.map((item) =>
+      item.id === id ? { ...item, [field]: value } : item
+    );
+    setItems(updated);
+  };
+
+  const handleAdd = () => {
+    const newItem = {
+      id: items.length + 1,
+      description: '',
+      hsn: '',
+      qty: '',
+      rate: '',
+    };
+    setItems([...items, newItem]);
+  };
+
   return (
-    <>
-      {/* Line Items Table */}
-      <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: 20, border: '1px solid #000' }}>
+    <div className="table_container">
+      <table>
         <thead>
-          <tr style={{ backgroundColor: '#f0f0f0' }}>
-            <th style={{ padding: 8, textAlign: 'center', border: '1px solid #000', fontSize: '12px' }}>Sl.No</th>
-            <th style={{ padding: 8, textAlign: 'left', border: '1px solid #000', fontSize: '12px' }}>Description</th>
-            <th style={{ padding: 8, textAlign: 'center', border: '1px solid #000', fontSize: '12px' }}>HSN Code</th>
-            <th style={{ padding: 8, textAlign: 'center', border: '1px solid #000', fontSize: '12px' }}>Qty.</th>
-            <th style={{ padding: 8, textAlign: 'right', border: '1px solid #000', fontSize: '12px' }}>Rate / Unit</th>
-            <th style={{ padding: 8, textAlign: 'right', border: '1px solid #000', fontSize: '12px' }}>Value In INR</th>
+          <tr>
+            <th>Sl.No</th>
+            <th>Description</th>
+            <th>HSN Code</th>
+            <th>Qty.</th>
+            <th>Rate/Unit</th>
+            <th>Value</th>
           </tr>
         </thead>
         <tbody>
           {items.map((item, index) => (
-            <tr key={index}>
-              <td style={{ padding: 8, border: '1px solid #000', textAlign: 'center', fontSize: '12px' }}>{item.si}</td>
-              <td style={{ padding: 8, border: '1px solid #000', fontSize: '12px' }}>
-                <input
-                  type="text"
-                  value={item.description}
-                  onChange={e => updateItem(index, 'description', e.target.value)}
-                  style={{ width: '100%', border: 'none', background: 'transparent', fontSize: '12px' }}
-                  placeholder="Description"
-                />
-              </td>
-              <td style={{ padding: 8, border: '1px solid #000', fontSize: '12px' }}>
-                <input
-                  type="text"
-                  value={item.hsn}
-                  onChange={e => updateItem(index, 'hsn', e.target.value)}
-                  style={{ width: '100%', border: 'none', background: 'transparent', fontSize: '12px', textAlign: 'center' }}
-                  placeholder="HSN Code"
-                />
-              </td>
-              <td style={{ padding: 8, border: '1px solid #000', fontSize: '12px' }}>
-                <input
-                  type="number"
-                  value={item.qty}
-                  onChange={e => updateItem(index, 'qty', e.target.value)}
-                  style={{ width: '50px', border: 'none', background: 'transparent', fontSize: '12px', textAlign: 'center' }}
-                />
-              </td>
-              <td style={{ padding: 8, border: '1px solid #000', fontSize: '12px' }}>
-                <input
-                  type="number"
-                  value={item.rate}
-                  onChange={e => updateItem(index, 'rate', e.target.value)}
-                  style={{ width: '80px', border: 'none', background: 'transparent', fontSize: '12px', textAlign: 'right' }}
-                  placeholder="0.00"
-                />
-              </td>
-              <td style={{ padding: 8, border: '1px solid #000', textAlign: 'right', fontSize: '12px', fontWeight: 'bold' }}>
-                {lineValue(item).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-              </td>
+            <tr key={item.id}>
+              <td>{index + 1}</td>
+
+              {['description', 'hsn', 'qty', 'rate'].map((field) => (
+                <td
+                  key={field}
+                  onDoubleClick={() => handleDoubleClick(item.id, field)}
+                >
+                  {editingCell.id === item.id && editingCell.field === field ? (
+                    <input
+                      autoFocus
+                      type={field === 'qty' || field === 'rate' ? 'number' : 'text'}
+                      value={item[field]}
+                      onChange={(e) =>
+                        handleChange(item.id, field, e.target.value)
+                      }
+                      onKeyDown={handleKeyDown}
+                      onBlur={() => setEditingCell({ id: null, field: null })}
+                    />
+                  ) : (
+                    item[field]
+                  )}
+                </td>
+              ))}
+
+              <td>{getValue(item.qty, item.rate).toFixed(2)}</td>
             </tr>
           ))}
-          {/* Add empty rows to match the original format */}
-          {Array.from({ length: Math.max(0, 10 - items.length) }).map((_, index) => (
-            <tr key={`empty-${index}`}>
-              <td style={{ padding: 8, border: '1px solid #000', height: '30px' }}></td>
-              <td style={{ padding: 8, border: '1px solid #000' }}></td>
-              <td style={{ padding: 8, border: '1px solid #000' }}></td>
-              <td style={{ padding: 8, border: '1px solid #000' }}></td>
-              <td style={{ padding: 8, border: '1px solid #000' }}></td>
-              <td style={{ padding: 8, border: '1px solid #000' }}></td>
-            </tr>
-          ))}
+
+          {/* ---- Summary rows ---- */}
+          <tr>
+            <td colSpan="5" className="summary-label">Sub Total</td>
+            <td className="summary-value">{subTotal.toFixed(2)}</td>
+          </tr>
+          <tr>
+            <td colSpan="5" className="summary-label">CGST @ 9%</td>
+            <td className="summary-value">{cgst.toFixed(2)}</td>
+          </tr>
+          <tr>
+            <td colSpan="5" className="summary-label">SGST @ 9%</td>
+            <td className="summary-value">{sgst.toFixed(2)}</td>
+          </tr>
+          <tr>
+            <td colSpan="5" className="summary-label">IGST @ 18%</td>
+            <td className="summary-value">{igst.toFixed(2)}</td>
+          </tr>
+          
+          <tr className="grand-total-row">
+            <td colSpan="5" className="summary-label">Grand Total</td>
+            <td className="summary-value">{grandTotal.toFixed(2)}</td>
+          </tr>
         </tbody>
       </table>
 
-      <div style={{ marginTop: 8 }}>
-        <button onClick={addItem}>Add Item</button>
+      <div style={{ textAlign: 'right', marginTop: '10px' }}>
+        <button onClick={handleAdd}>Add Item</button>
       </div>
-    </>
+    </div>
   );
-};
+}
 
 export default Table;

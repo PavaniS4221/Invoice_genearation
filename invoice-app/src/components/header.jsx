@@ -1,67 +1,101 @@
-import React from 'react';
+import React, { useState } from 'react';
+import './header.css';
+import BillerName from './billername';
 
-const Header = ({ 
-  invoiceNo, 
-  invoiceDate, 
-  placeOfSupply, 
-  buyerOrder, 
-  customerCode, 
-  paymentTerms, 
-  deliveryTerms,
-  sellerName,
-  sellerAddress,
-  sellerPhone,
-  sellerGST,
-  customerName,
-  customerAddress,
-  customerGST
-}) => {
+function Header() {
+  // Initialize all fields with default values
+  const [headerData, setHeaderData] = useState({
+    invoiceNo: 'INV-001',
+    invoiceDate: '2025-10-19',
+    placeOfSupply: 'Bangalore',
+    buyerOrder: 'BO-123',
+    customerCode: 'CUST-001',
+    paymentTerms: 'Net 30',
+    deliveryTerms: 'Door Delivery',
+  });
+
+  const [editingField, setEditingField] = useState(null);
+
+  // Double-click to edit
+  const handleDoubleClick = (field) => {
+    setEditingField(field);
+  };
+
+  // Input change
+  const handleChange = (field, value) => {
+    setHeaderData({
+      ...headerData,
+      [field]: value,
+    });
+  };
+
+  // Save on Enter
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') setEditingField(null);
+  };
+
+  // Save on blur
+  const handleBlur = () => {
+    setEditingField(null);
+  };
+
   return (
-    <>
-      {/* Header Section - TAX INVOICE */}
-      <div style={{ textAlign: 'center', marginBottom: 20 }}>
-        <h1 style={{ margin: 0, fontSize: '24px', fontWeight: 'bold', color: '#000' }}>TAX INVOICE</h1>
-      </div>
+    <div className="header">
+      <h1>Tax Invoice</h1>
+      <div className="header_container">
+        <div className="header_left_top">
+          <BillerName />
+        </div>
 
-      {/* Top Section with Invoice Details */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 20 }}>
-        {/* Left Side - Seller Information */}
-        <div style={{ flex: 1 }}>
-          <div style={{ marginBottom: 10 }}>
-            <div style={{ fontWeight: 'bold', fontSize: '14px', marginBottom: 5 }}>{sellerName}</div>
-            <div style={{ fontSize: '12px', lineHeight: '1.4' }}>{sellerAddress}</div>
-            <div style={{ fontSize: '12px' }}>{sellerPhone}</div>
-            <div style={{ fontSize: '12px', fontWeight: 'bold' }}>GSTIN No: {sellerGST}</div>
-          </div>
-
-          {/* Consignee Information */}
-          <div style={{ marginTop: 15 }}>
-            <div style={{ fontSize: '12px', fontWeight: 'bold', marginBottom: 5 }}>Name & Address of Consignee:</div>
-            <div style={{ fontSize: '12px', lineHeight: '1.4' }}>
-              <div style={{ fontWeight: 'bold' }}>{customerName}</div>
-              <div>{customerAddress}</div>
-              <div style={{ fontWeight: 'bold' }}>GSTIN No: {customerGST}</div>
+        <div className="header_right_section">
+          {Object.entries(headerData).map(([key, value]) => (
+            <div
+              className="header_right_top_bottom"
+              key={key}
+              onDoubleClick={() => handleDoubleClick(key)}
+            >
+              {editingField === key ? (
+                <input
+                  type={key === 'invoiceDate' ? 'date' : 'text'}
+                  value={value}
+                  onChange={(e) => handleChange(key, e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  onBlur={handleBlur}
+                  autoFocus
+                />
+              ) : (
+                <p>
+                  {formatLabel(key)}: {value}
+                </p>
+              )}
             </div>
-          </div>
-        </div>
-
-        {/* Right Side - Invoice Details */}
-        <div style={{ flex: 1, textAlign: 'right' }}>
-          <div style={{ fontSize: '10px', marginBottom: 10, textAlign: 'right' }}>Original - for Buyer's</div>
-          
-          <div style={{ fontSize: '12px', lineHeight: '1.8', textAlign: 'left' }}>
-            <div><strong>Inv no:</strong> {invoiceNo}</div>
-            <div><strong>Date -</strong> {invoiceDate}</div>
-            <div><strong>Place of Supply :</strong> {placeOfSupply}</div>
-            <div><strong>Buyer's Order No.:</strong> {buyerOrder || ""}</div>
-            <div><strong>Customer code:</strong> {customerCode || ""}</div>
-            <div><strong>Payment terms:</strong> {paymentTerms}</div>
-            <div><strong>Delivery terms:</strong> {deliveryTerms}</div>
-          </div>
+          ))}
         </div>
       </div>
-    </>
+    </div>
   );
+}
+
+// Helper to format field names nicely
+const formatLabel = (key) => {
+  switch (key) {
+    case 'invoiceNo':
+      return 'Inv no';
+    case 'invoiceDate':
+      return 'Date';
+    case 'placeOfSupply':
+      return 'Place of Supply';
+    case 'buyerOrder':
+      return "Buyer's Order No.";
+    case 'customerCode':
+      return 'Customer code';
+    case 'paymentTerms':
+      return 'Payment Terms';
+    case 'deliveryTerms':
+      return 'Delivery Terms';
+    default:
+      return key;
+  }
 };
 
 export default Header;

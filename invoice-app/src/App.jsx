@@ -1,3 +1,4 @@
-import InvoiceGenerator from './InvoiceGenerator';
-function App(){ return <InvoiceGenerator/> }
+import InvoiceGenerator from './components/InvoiceGenerator';
+function App(){
+     return <InvoiceGenerator/> }
 export default App;

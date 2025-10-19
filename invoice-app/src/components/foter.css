@@ -1,0 +1,47 @@
+.footer-container {
+  display: flex;
+  justify-content: space-between;
+  
+  background-color: #f9f9f9;
+ 
+  color: black;
+  margin:0;
+}
+
+.footer-left {
+  flex: 1;
+  margin-right: 20px;
+}
+
+.footer-divider {
+  width: 1px;
+  background-color: #ccc;
+  margin: 0 20px;
+}
+
+.footer-right {
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
+  gap: 40px;
+  align-items: flex-end;
+}
+
+.signature-box {
+  text-align: center;
+  max-width: 150px;
+}
+
+.signature-circle {
+  width: 80px;
+  height: 80px;
+  border: 2px solid #000;
+  border-radius: 50%;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 8px;
+  text-align: center;
+  line-height: 1.2;
+}
